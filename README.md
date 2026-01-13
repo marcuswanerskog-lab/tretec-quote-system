@@ -63,6 +63,13 @@ tretec-quote-system/
    cd scripts
    python server.py
    ```
+   
+   För utveckling med debug-läge:
+   ```bash
+   FLASK_DEBUG=true python server.py
+   ```
+   
+   **OBS:** Använd aldrig debug-läge i produktion av säkerhetsskäl.
 
 5. **Öppna webbläsaren**
    
@@ -200,10 +207,12 @@ Loggar visas i konsolen där servern körs. För produktion, konfigurera loggnin
 
 ## Säkerhet
 
-- Använd HTTPS i produktion
-- Implementera autentisering för känsliga operationer
-- Validera all input på serversidan
-- Håll dependencies uppdaterade: `pip list --outdated`
+- **Debug-läge**: Debug-läge är avstängt som standard. Använd aldrig `FLASK_DEBUG=true` i produktion
+- **HTTPS**: Använd HTTPS i produktion för att skydda data i transit
+- **Autentisering**: Implementera autentisering för känsliga operationer
+- **Input-validering**: Validera all input på serversidan
+- **Dependencies**: Håll dependencies uppdaterade: `pip list --outdated`
+- **Secrets**: Lagra aldrig känslig information (lösenord, API-nycklar) i källkoden
 
 ## Utveckling
 
