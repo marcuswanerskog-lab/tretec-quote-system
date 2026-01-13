@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tretec Quote System - Offertsystem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .content {
+            padding: 30px;
+        }
+
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 30px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .tab {
+            padding: 12px 24px;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 1em;
+            color: #666;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .tab:hover {
+            color: #667eea;
+        }
+
+        .tab.active {
+            color: #667eea;
+            border-bottom-color: #667eea;
+            font-weight: bold;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .form-section {
+            margin-bottom: 30px;
+        }
+
+        .form-section h2 {
+            color: #333;
+            margin-bottom: 15px;
+            font-size: 1.5em;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .search-bar {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            flex: 1;
+        }
+
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .product-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            transition: all 0.3s;
+            cursor: pointer;
+        }
+
+        .product-card:hover {
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transform: translateY(-2px);
+        }
+
+        .product-card h3 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 1.1em;
+        }
+
+        .product-card .price {
+            color: #667eea;
+            font-size: 1.3em;
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        .product-card .category {
+            display: inline-block;
+            background: #f0f0f0;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.85em;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .product-card button {
+            width: 100%;
+            padding: 8px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+        }
+
+        .product-card button:hover {
+            background: #5568d3;
+        }
+
+        .cart {
+            background: #f9f9f9;
+            border-radius: 8px;
+            padding: 20px;
+            margin-top: 30px;
+        }
+
+        .cart h2 {
+            margin-bottom: 20px;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            background: white;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        .cart-item-info {
+            flex: 1;
+        }
+
+        .cart-item-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .cart-item input[type="number"] {
+            width: 60px;
+            padding: 5px;
+        }
+
+        .cart-item .discount {
+            width: 80px;
+        }
+
+        .cart-item button {
+            padding: 5px 10px;
+            background: #dc3545;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .cart-total {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #ddd;
+            font-size: 1.3em;
+            font-weight: bold;
+            text-align: right;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 20px;
+        }
+
+        .btn-primary:hover {
+            opacity: 0.9;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 5px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .services-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .service-item {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .service-info {
+            flex: 1;
+        }
+
+        .service-info h3 {
+            margin-bottom: 5px;
+        }
+
+        .service-info p {
+            color: #666;
+            font-size: 0.9em;
+        }
+
+        .service-controls {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>{{ company.name }}</h1>
+            <p>Professionella säkerhetslösningar för hem och företag</p>
+        </div>
+
+        <div class="content">
+            <div class="tabs">
+                <button class="tab active" onclick="switchTab('quote', event)">Ny Offert</button>
+                <button class="tab" onclick="switchTab('agreement', event)">Nytt Affärsavtal</button>
+            </div>
+
+            <div id="alert-container"></div>
+
+            <!-- Offert Tab -->
+            <div id="quote-tab" class="tab-content active">
+                <div class="form-section">
+                    <h2>Kundinformation</h2>
+                    <div class="form-group">
+                        <label for="customer-name">Namn *</label>
+                        <input type="text" id="customer-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-company">Företag</label>
+                        <input type="text" id="customer-company">
+                    </div>
+                    <div class="form-group">
+                        <label for="customer-email">Email</label>
+                        <input type="email" id="customer-email">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Produkter</h2>
+                    <div class="search-bar">
+                        <input type="text" id="product-search" placeholder="Sök produkter...">
+                        <select id="category-filter">
+                            <option value="">Alla kategorier</option>
+                            <option value="larm">Larm</option>
+                            <option value="kamera">Kamera</option>
+                            <option value="ellas">Ellås</option>
+                        </select>
+                    </div>
+                    <div class="products-grid" id="products-grid"></div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Tjänster</h2>
+                    <div class="services-list" id="services-list"></div>
+                </div>
+
+                <div class="cart">
+                    <h2>Offertinnehåll</h2>
+                    <div id="cart-items"></div>
+                    <div class="cart-total">
+                        Totalt: <span id="cart-total">0</span> kr
+                    </div>
+                    <button class="btn-primary" onclick="generatePDF('quote')">Generera Offert (PDF)</button>
+                </div>
+            </div>
+
+            <!-- Affärsavtal Tab -->
+            <div id="agreement-tab" class="tab-content">
+                <div class="form-section">
+                    <h2>Kundinformation</h2>
+                    <div class="form-group">
+                        <label for="agreement-customer-name">Namn *</label>
+                        <input type="text" id="agreement-customer-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="agreement-customer-company">Företag *</label>
+                        <input type="text" id="agreement-customer-company" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="agreement-customer-email">Email</label>
+                        <input type="email" id="agreement-customer-email">
+                    </div>
+                    <div class="form-group">
+                        <label for="agreement-number">Avtalsnummer</label>
+                        <input type="text" id="agreement-number" placeholder="Auto-genereras om tomt">
+                    </div>
+                    <div class="form-group">
+                        <label for="contract-period">Avtalsperiod</label>
+                        <select id="contract-period">
+                            <option value="12 månader">12 månader</option>
+                            <option value="24 månader">24 månader</option>
+                            <option value="36 månader">36 månader</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Produkter</h2>
+                    <div class="search-bar">
+                        <input type="text" id="agreement-product-search" placeholder="Sök produkter...">
+                        <select id="agreement-category-filter">
+                            <option value="">Alla kategorier</option>
+                            <option value="larm">Larm</option>
+                            <option value="kamera">Kamera</option>
+                            <option value="ellas">Ellås</option>
+                        </select>
+                    </div>
+                    <div class="products-grid" id="agreement-products-grid"></div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Tjänster</h2>
+                    <div class="services-list" id="agreement-services-list"></div>
+                </div>
+
+                <div class="cart">
+                    <h2>Avtalsinnehåll</h2>
+                    <div id="agreement-cart-items"></div>
+                    <div class="cart-total">
+                        Totalt: <span id="agreement-cart-total">0</span> kr
+                    </div>
+                    <button class="btn-primary" onclick="generatePDF('agreement')">Generera Affärsavtal (PDF)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let cart = [];
+        let agreementCart = [];
+        let products = [];
+        let services = [];
+
+        // Ladda produkter och tjänster
+        async function loadProducts() {
+            try {
+                const response = await fetch('/api/products');
+                products = await response.json();
+                renderProducts();
+                renderProductsForAgreement();
+            } catch (error) {
+                showAlert('Kunde inte ladda produkter: ' + error.message, 'error');
+            }
+        }
+
+        async function loadServices() {
+            try {
+                const response = await fetch('/api/services');
+                services = await response.json();
+                renderServices();
+                renderServicesForAgreement();
+            } catch (error) {
+                showAlert('Kunde inte ladda tjänster: ' + error.message, 'error');
+            }
+        }
+
+        function renderProducts() {
+            const grid = document.getElementById('products-grid');
+            const search = document.getElementById('product-search').value.toLowerCase();
+            const category = document.getElementById('category-filter').value;
+
+            let filtered = products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(search);
+                const matchesCategory = !category || p.category === category;
+                return matchesSearch && matchesCategory;
+            });
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="product-card">
+                    <span class="category">${p.category}</span>
+                    <h3>${p.name}</h3>
+                    <div class="price">${p.price.toLocaleString('sv-SE')} kr</div>
+                    <button onclick="addToCart(${p.id}, 'quote')">Lägg till</button>
+                </div>
+            `).join('');
+        }
+
+        function renderProductsForAgreement() {
+            const grid = document.getElementById('agreement-products-grid');
+            const search = document.getElementById('agreement-product-search').value.toLowerCase();
+            const category = document.getElementById('agreement-category-filter').value;
+
+            let filtered = products.filter(p => {
+                const matchesSearch = p.name.toLowerCase().includes(search);
+                const matchesCategory = !category || p.category === category;
+                return matchesSearch && matchesCategory;
+            });
+
+            grid.innerHTML = filtered.map(p => `
+                <div class="product-card">
+                    <span class="category">${p.category}</span>
+                    <h3>${p.name}</h3>
+                    <div class="price">${p.price.toLocaleString('sv-SE')} kr</div>
+                    <button onclick="addToCart(${p.id}, 'agreement')">Lägg till</button>
+                </div>
+            `).join('');
+        }
+
+        function renderServices() {
+            const list = document.getElementById('services-list');
+            list.innerHTML = services.map(s => `
+                <div class="service-item">
+                    <div class="service-info">
+                        <h3>${s.name}</h3>
+                        <p>${s.hourly_rate} kr/timme · Uppskattat: ${s.estimated_hours} timmar</p>
+                    </div>
+                    <div class="service-controls">
+                        <input type="number" id="service-hours-${s.id}" min="1" value="${s.estimated_hours}" style="width: 80px;">
+                        <button class="product-card button" onclick="addServiceToCart(${s.id}, 'quote')">Lägg till</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderServicesForAgreement() {
+            const list = document.getElementById('agreement-services-list');
+            list.innerHTML = services.map(s => `
+                <div class="service-item">
+                    <div class="service-info">
+                        <h3>${s.name}</h3>
+                        <p>${s.hourly_rate} kr/timme · Uppskattat: ${s.estimated_hours} timmar</p>
+                    </div>
+                    <div class="service-controls">
+                        <input type="number" id="agreement-service-hours-${s.id}" min="1" value="${s.estimated_hours}" style="width: 80px;">
+                        <button class="product-card button" onclick="addServiceToCart(${s.id}, 'agreement')">Lägg till</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function addToCart(productId, type) {
+            const product = products.find(p => p.id === productId);
+            if (!product) return;
+
+            const targetCart = type === 'agreement' ? agreementCart : cart;
+            const existing = targetCart.find(item => item.id === productId && item.type === 'product');
+            
+            if (existing) {
+                existing.quantity++;
+            } else {
+                targetCart.push({
+                    id: productId,
+                    type: 'product',
+                    name: product.name,
+                    price: product.price,
+                    quantity: 1,
+                    discount: 0
+                });
+            }
+
+            if (type === 'agreement') {
+                agreementCart = targetCart;
+                renderAgreementCart();
+            } else {
+                cart = targetCart;
+                renderCart();
+            }
+            showAlert('Produkt tillagd!', 'success');
+        }
+
+        function addServiceToCart(serviceId, type) {
+            const service = services.find(s => s.id === serviceId);
+            if (!service) return;
+
+            const hoursInput = type === 'agreement' 
+                ? document.getElementById(`agreement-service-hours-${serviceId}`)
+                : document.getElementById(`service-hours-${serviceId}`);
+            const hours = parseInt(hoursInput.value) || service.estimated_hours;
+
+            const targetCart = type === 'agreement' ? agreementCart : cart;
+            const existing = targetCart.find(item => item.id === serviceId && item.type === 'service');
+
+            if (existing) {
+                existing.quantity = hours;
+            } else {
+                targetCart.push({
+                    id: serviceId,
+                    type: 'service',
+                    name: service.name,
+                    price: service.hourly_rate,
+                    quantity: hours,
+                    discount: 0
+                });
+            }
+
+            if (type === 'agreement') {
+                agreementCart = targetCart;
+                renderAgreementCart();
+            } else {
+                cart = targetCart;
+                renderCart();
+            }
+            showAlert('Tjänst tillagd!', 'success');
+        }
+
+        function removeFromCart(index, type) {
+            if (type === 'agreement') {
+                agreementCart.splice(index, 1);
+                renderAgreementCart();
+            } else {
+                cart.splice(index, 1);
+                renderCart();
+            }
+        }
+
+        function updateCartItem(index, field, value, type) {
+            const targetCart = type === 'agreement' ? agreementCart : cart;
+            targetCart[index][field] = parseFloat(value) || 0;
+            
+            if (type === 'agreement') {
+                renderAgreementCart();
+            } else {
+                renderCart();
+            }
+        }
+
+        function renderCart() {
+            const container = document.getElementById('cart-items');
+            const totalEl = document.getElementById('cart-total');
+
+            if (cart.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">Inga produkter eller tjänster tillagda ännu</p>';
+                totalEl.textContent = '0';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = cart.map((item, index) => {
+                const subtotal = item.price * item.quantity * (1 - item.discount / 100);
+                total += subtotal;
+                
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <strong>${item.name}</strong>
+                            <div style="font-size: 0.9em; color: #666;">
+                                ${item.price.toLocaleString('sv-SE')} kr ${item.type === 'service' ? '/timme' : '/st'}
+                            </div>
+                        </div>
+                        <div class="cart-item-controls">
+                            <input type="number" min="1" value="${item.quantity}" 
+                                   onchange="updateCartItem(${index}, 'quantity', this.value, 'quote')">
+                            <input type="number" class="discount" min="0" max="100" value="${item.discount}" 
+                                   placeholder="Rabatt %" onchange="updateCartItem(${index}, 'discount', this.value, 'quote')">
+                            <span style="min-width: 100px; text-align: right; font-weight: bold;">
+                                ${subtotal.toLocaleString('sv-SE')} kr
+                            </span>
+                            <button onclick="removeFromCart(${index}, 'quote')">Ta bort</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalEl.textContent = total.toLocaleString('sv-SE');
+        }
+
+        function renderAgreementCart() {
+            const container = document.getElementById('agreement-cart-items');
+            const totalEl = document.getElementById('agreement-cart-total');
+
+            if (agreementCart.length === 0) {
+                container.innerHTML = '<p style="text-align: center; color: #999;">Inga produkter eller tjänster tillagda ännu</p>';
+                totalEl.textContent = '0';
+                return;
+            }
+
+            let total = 0;
+            container.innerHTML = agreementCart.map((item, index) => {
+                const subtotal = item.price * item.quantity * (1 - item.discount / 100);
+                total += subtotal;
+                
+                return `
+                    <div class="cart-item">
+                        <div class="cart-item-info">
+                            <strong>${item.name}</strong>
+                            <div style="font-size: 0.9em; color: #666;">
+                                ${item.price.toLocaleString('sv-SE')} kr ${item.type === 'service' ? '/timme' : '/st'}
+                            </div>
+                        </div>
+                        <div class="cart-item-controls">
+                            <input type="number" min="1" value="${item.quantity}" 
+                                   onchange="updateCartItem(${index}, 'quantity', this.value, 'agreement')">
+                            <input type="number" class="discount" min="0" max="100" value="${item.discount}" 
+                                   placeholder="Rabatt %" onchange="updateCartItem(${index}, 'discount', this.value, 'agreement')">
+                            <span style="min-width: 100px; text-align: right; font-weight: bold;">
+                                ${subtotal.toLocaleString('sv-SE')} kr
+                            </span>
+                            <button onclick="removeFromCart(${index}, 'agreement')">Ta bort</button>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            totalEl.textContent = total.toLocaleString('sv-SE');
+        }
+
+        async function generatePDF(type) {
+            try {
+                let customerName, customerCompany, customerEmail;
+                let items, agreementNumber, contractPeriod;
+
+                if (type === 'agreement') {
+                    customerName = document.getElementById('agreement-customer-name').value;
+                    customerCompany = document.getElementById('agreement-customer-company').value;
+                    customerEmail = document.getElementById('agreement-customer-email').value;
+                    agreementNumber = document.getElementById('agreement-number').value || `AVT-${Date.now()}`;
+                    contractPeriod = document.getElementById('contract-period').value;
+                    items = agreementCart;
+                } else {
+                    customerName = document.getElementById('customer-name').value;
+                    customerCompany = document.getElementById('customer-company').value;
+                    customerEmail = document.getElementById('customer-email').value;
+                    items = cart;
+                }
+
+                if (!customerName) {
+                    showAlert('Vänligen fyll i kundens namn', 'error');
+                    return;
+                }
+
+                if (items.length === 0) {
+                    showAlert('Vänligen lägg till minst en produkt eller tjänst', 'error');
+                    return;
+                }
+
+                const data = {
+                    type: type,
+                    customer: {
+                        name: customerName,
+                        company: customerCompany,
+                        email: customerEmail
+                    },
+                    items: items,
+                    agreement_number: agreementNumber,
+                    contract_period: contractPeriod
+                };
+
+                const response = await fetch('/api/generate-pdf', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (!response.ok) {
+                    const error = await response.json();
+                    throw new Error(error.error || 'Kunde inte generera PDF');
+                }
+
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `tretec_${type}_${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+
+                showAlert(type === 'agreement' ? 'Affärsavtal genererat!' : 'Offert genererad!', 'success');
+            } catch (error) {
+                showAlert('Fel vid generering: ' + error.message, 'error');
+            }
+        }
+
+        function switchTab(tab, event) {
+            document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            
+            event.target.classList.add('active');
+            document.getElementById(tab + '-tab').classList.add('active');
+        }
+
+        function showAlert(message, type) {
+            const container = document.getElementById('alert-container');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.textContent = message;
+            container.appendChild(alert);
+
+            setTimeout(() => {
+                alert.remove();
+            }, 3000);
+        }
+
+        // Event listeners
+        document.getElementById('product-search').addEventListener('input', renderProducts);
+        document.getElementById('category-filter').addEventListener('change', renderProducts);
+        document.getElementById('agreement-product-search').addEventListener('input', renderProductsForAgreement);
+        document.getElementById('agreement-category-filter').addEventListener('change', renderProductsForAgreement);
+
+        // Ladda data vid sidladdning
+        loadProducts();
+        loadServices();
+    </script>
+</body>
+</html>

@@ -1,0 +1,2 @@
+/* Placeholder for company logo */
+/* Add your Tretec Larm AB logo here as logo.png */
