@@ -780,7 +780,6 @@ if __name__ == '__main__':
         logger.warning(f"Kunde inte skrapa ellås-produkter vid start: {e}")
     
     # Använd debug=False i produktion för säkerhet
-    import os
     debug_mode = os.environ.get('FLASK_DEBUG', 'False').lower() == 'true'
     
     logger.info("Server redo på http://localhost:5000")
