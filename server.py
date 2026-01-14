@@ -72,6 +72,9 @@ def customers():
         return jsonify(load_customers())
     elif request.method == 'POST':
         data = request.json
+        if not data:
+            return jsonify({'error': 'Invalid request data'}), 400
+        
         customers = load_customers()
         customer_id = data.get('id', str(uuid.uuid4()))
         customers[customer_id] = {
@@ -99,6 +102,9 @@ def customer(customer_id):
     elif request.method == 'PUT':
         if customer_id in customers:
             data = request.json
+            if not data:
+                return jsonify({'error': 'Invalid request data'}), 400
+            
             customers[customer_id].update({
                 'name': data.get('name', customers[customer_id]['name']),
                 'address': data.get('address', customers[customer_id]['address']),
@@ -124,6 +130,9 @@ def quotes():
         return jsonify(load_quotes())
     elif request.method == 'POST':
         data = request.json
+        if not data:
+            return jsonify({'error': 'Invalid request data'}), 400
+        
         quotes = load_quotes()
         quote_id = data.get('id', str(uuid.uuid4()))
         quotes[quote_id] = {
@@ -151,6 +160,9 @@ def quote(quote_id):
     elif request.method == 'PUT':
         if quote_id in quotes:
             data = request.json
+            if not data:
+                return jsonify({'error': 'Invalid request data'}), 400
+            
             quotes[quote_id].update({
                 'customer_id': data.get('customer_id', quotes[quote_id]['customer_id']),
                 'items': data.get('items', quotes[quote_id]['items']),
@@ -173,6 +185,8 @@ def quote(quote_id):
 @app.route('/api/generate-pdf', methods=['POST'])
 def generate_pdf():
     data = request.json
+    if not data:
+        return jsonify({'error': 'Invalid request data'}), 400
     
     # Create PDF in memory
     buffer = BytesIO()
