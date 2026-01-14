@@ -92,7 +92,10 @@ def scrape_ellas_products():
                     name = name_elem.get_text(strip=True)
                     price_text = price_elem.get_text(strip=True)
                     # Extrahera nummer från pris
-                    price = int(''.join(filter(str.isdigit, price_text)))
+                    price_digits = ''.join(filter(str.isdigit, price_text))
+                    if not price_digits:
+                        continue
+                    price = int(price_digits)
                     
                     if name and price > 0:
                         products.append({
@@ -170,6 +173,9 @@ def generate_pdf():
     """Generera PDF-offert"""
     try:
         data = request.json
+        if not data:
+            return jsonify({'error': 'Ingen data skickades'}), 400
+        
         doc_type = data.get('type', 'quote')  # 'quote' eller 'agreement'
         
         if doc_type == 'agreement':
