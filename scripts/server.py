@@ -172,6 +172,10 @@ def get_services():
 def generate_pdf():
     """Generera PDF-offert"""
     try:
+        # Validera Content-Type
+        if not request.is_json:
+            return jsonify({'error': 'Content-Type måste vara application/json'}), 400
+        
         data = request.json
         if not data:
             return jsonify({'error': 'Ingen data skickades'}), 400
