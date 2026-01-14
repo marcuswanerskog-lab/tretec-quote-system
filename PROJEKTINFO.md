@@ -9,9 +9,10 @@ tretec-quote-system/
 ├── templates/
 │   └── index.html         # Webbgränssnitt (HTML + CSS + JavaScript)
 ├── static/
-│   └── logo-placeholder.txt  # Plats för företagslogga
+│   └── Treteclogo.jpg     # Företagslogga
 ├── requirements.txt       # Python-beroenden
 ├── .gitignore            # Git-ignoreringar
+├── PROJEKTINFO.md        # Teknisk dokumentation (denna fil)
 └── README.md             # Huvuddokumentation
 ```
 
