@@ -429,8 +429,19 @@
                     // Add to list
                     const item = document.createElement('div');
                     item.className = 'customer-item';
-                    item.innerHTML = `<strong>${customer.name}</strong><br><small>${customer.invoice_email || 'Ingen mejl'}</small>`;
-                    item.onclick = function() { selectCustomer(customer.id, this); };
+                    
+                    const nameStrong = document.createElement('strong');
+                    nameStrong.textContent = customer.name;
+                    const emailSmall = document.createElement('small');
+                    emailSmall.textContent = customer.invoice_email || 'Ingen mejl';
+                    
+                    item.appendChild(nameStrong);
+                    item.appendChild(document.createElement('br'));
+                    item.appendChild(emailSmall);
+                    
+                    item.addEventListener('click', function() { 
+                        selectCustomer(customer.id, this); 
+                    });
                     customerList.appendChild(item);
                     
                     // Add to select
@@ -673,15 +684,30 @@
             items.forEach((item, index) => {
                 const div = document.createElement('div');
                 div.className = 'quote-item';
-                div.innerHTML = `
-                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                        <div>
-                            <strong>${item.name}</strong><br>
-                            <small>${item.quantity} st × ${item.price.toFixed(2)} kr = ${(item.quantity * item.price).toFixed(2)} kr</small>
-                        </div>
-                        <button class="btn-danger" onclick="removeItem(${index})">🗑️</button>
-                    </div>
-                `;
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.style.display = 'flex';
+                contentDiv.style.justifyContent = 'space-between';
+                contentDiv.style.alignItems = 'center';
+                
+                const infoDiv = document.createElement('div');
+                const nameStrong = document.createElement('strong');
+                nameStrong.textContent = item.name;
+                const detailsSmall = document.createElement('small');
+                detailsSmall.textContent = `${item.quantity} st × ${item.price.toFixed(2)} kr = ${(item.quantity * item.price).toFixed(2)} kr`;
+                
+                infoDiv.appendChild(nameStrong);
+                infoDiv.appendChild(document.createElement('br'));
+                infoDiv.appendChild(detailsSmall);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-danger';
+                deleteBtn.textContent = '🗑️';
+                deleteBtn.addEventListener('click', () => removeItem(index));
+                
+                contentDiv.appendChild(infoDiv);
+                contentDiv.appendChild(deleteBtn);
+                div.appendChild(contentDiv);
                 container.appendChild(div);
             });
         }

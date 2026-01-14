@@ -291,20 +291,26 @@ def load_agreement_template(customer_data):
     agreement_parts = []
     
     if os.path.exists(agreement_file):
-        with open(agreement_file, 'r', encoding='utf-8') as f:
-            content = f.read()
-            # Replace placeholders with customer data
-            content = content.replace('{KUNDNAMN}', customer_data.get('name', '⚠️ KUNDNAMN SAKNAS'))
-            content = content.replace('{ADRESS}', customer_data.get('address', '⚠️ ADRESS SAKNAS'))
-            content = content.replace('{DATUM}', datetime.now().strftime('%Y-%m-%d'))
-            agreement_parts.append(content)
+        try:
+            with open(agreement_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                # Replace placeholders with customer data
+                content = content.replace('{KUNDNAMN}', customer_data.get('name', '⚠️ KUNDNAMN SAKNAS'))
+                content = content.replace('{ADRESS}', customer_data.get('address', '⚠️ ADRESS SAKNAS'))
+                content = content.replace('{DATUM}', datetime.now().strftime('%Y-%m-%d'))
+                agreement_parts.append(content)
+        except (IOError, OSError) as e:
+            agreement_parts.append(f'⚠️ AFFÄRSAVTAL: Kunde inte läsa avtalsmall ({e})')
     else:
         agreement_parts.append('⚠️ AFFÄRSAVTAL: Avtalsmall saknas (kopavtal_avtal.md)')
     
     if os.path.exists(appendix_file):
-        with open(appendix_file, 'r', encoding='utf-8') as f:
-            content = f.read()
-            agreement_parts.append(content)
+        try:
+            with open(appendix_file, 'r', encoding='utf-8') as f:
+                content = f.read()
+                agreement_parts.append(content)
+        except (IOError, OSError) as e:
+            agreement_parts.append(f'⚠️ BILAGOR: Kunde inte läsa bilagemall ({e})')
     else:
         agreement_parts.append('⚠️ BILAGOR: Bilagemall saknas (avtal_bilagor.md)')
     
