@@ -1,0 +1,786 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tretec Offertssystem</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.2);
+            overflow: hidden;
+        }
+        
+        header {
+            background: #003366;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+        
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            padding: 30px;
+        }
+        
+        .section {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .section h2 {
+            color: #003366;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 2px solid #003366;
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #495057;
+        }
+        
+        input[type="text"],
+        input[type="email"],
+        input[type="number"],
+        textarea,
+        select {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ced4da;
+            border-radius: 4px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+        
+        input:focus,
+        textarea:focus,
+        select:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            flex: 1;
+            min-width: 120px;
+        }
+        
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+        
+        .btn-success {
+            background: #28a745;
+            color: white;
+        }
+        
+        .btn-success:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-info:hover {
+            background: #138496;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(23, 162, 184, 0.4);
+        }
+        
+        .btn-warning {
+            background: #ffc107;
+            color: #212529;
+        }
+        
+        .btn-warning:hover {
+            background: #e0a800;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(255, 193, 7, 0.4);
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-danger:hover {
+            background: #c82333;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
+        }
+        
+        .customer-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        
+        .customer-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 8px;
+            border-radius: 4px;
+            cursor: pointer;
+            border: 1px solid #dee2e6;
+            transition: all 0.3s;
+        }
+        
+        .customer-item:hover {
+            background: #e9ecef;
+            border-color: #667eea;
+            transform: translateX(5px);
+        }
+        
+        .customer-item.selected {
+            background: #667eea;
+            color: white;
+            border-color: #667eea;
+        }
+        
+        .quote-item {
+            background: white;
+            padding: 15px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border: 1px solid #dee2e6;
+        }
+        
+        .item-row {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr 1fr auto;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        .item-row button {
+            flex: none;
+            min-width: auto;
+            padding: 5px 10px;
+        }
+        
+        .alert {
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 15px;
+        }
+        
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+        
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+        
+        .alert-warning {
+            background: #fff3cd;
+            color: #856404;
+            border: 1px solid #ffeaa7;
+        }
+        
+        .full-width {
+            grid-column: 1 / -1;
+        }
+        
+        .items-container {
+            margin-top: 15px;
+        }
+        
+        .total-display {
+            background: #003366;
+            color: white;
+            padding: 15px;
+            border-radius: 4px;
+            margin-top: 15px;
+            text-align: right;
+        }
+        
+        .total-display h3 {
+            margin-bottom: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔒 Tretec Offertssystem</h1>
+            <p>Professionell offerthantering med kundregister</p>
+        </header>
+        
+        <div class="main-content">
+            <!-- Customer Registry Section -->
+            <div class="section full-width">
+                <h2>📋 Kundregister</h2>
+                <div id="customerAlert"></div>
+                
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px;">
+                    <div>
+                        <div class="form-group">
+                            <label>Kundnamn *</label>
+                            <input type="text" id="customerName" placeholder="Ex: Lantmännen AB">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Adress</label>
+                            <input type="text" id="customerAddress" placeholder="Ex: Storgatan 1, 123 45 Stockholm">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Kontaktperson</label>
+                            <input type="text" id="customerContact" placeholder="Ex: Anna Andersson, 070-123 45 67">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Fakturamejl *</label>
+                            <input type="email" id="customerInvoiceEmail" placeholder="Ex: faktura@foretag.se">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label>Fakturaadress</label>
+                            <input type="text" id="customerInvoiceAddress" placeholder="Ex: Box 123, 123 45 Stockholm">
+                        </div>
+                        
+                        <div class="button-group">
+                            <button class="btn-success" onclick="saveCustomer()">💾 Spara kund</button>
+                            <button class="btn-info" onclick="newCustomer()">🆕 Ny kund</button>
+                            <button class="btn-danger" onclick="deleteCustomer()">🗑️ Ta bort</button>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label>Sparade kunder</label>
+                        <div class="customer-list" id="customerList"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quote Management Section -->
+            <div class="section">
+                <h2>💼 Offerthantering</h2>
+                <div id="quoteAlert"></div>
+                
+                <div class="form-group">
+                    <label>Offert-ID (för att ladda befintlig offert)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="quoteIdInput" placeholder="Ange offert-ID">
+                        <button class="btn-info" onclick="loadQuote()">📂 Ladda</button>
+                    </div>
+                </div>
+                
+                <div class="form-group">
+                    <label>Välj kund från register</label>
+                    <select id="quoteCustomerSelect">
+                        <option value="">-- Välj kund --</option>
+                    </select>
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-success" onclick="saveQuote()">💾 Spara offert</button>
+                    <button class="btn-info" onclick="newQuote()">🆕 Ny offert</button>
+                </div>
+                
+                <div id="currentQuoteId" style="margin-top: 10px; font-size: 12px; color: #6c757d;"></div>
+            </div>
+            
+            <!-- Items Section -->
+            <div class="section">
+                <h2>🛒 Produkter & Tjänster</h2>
+                
+                <div class="items-container" id="itemsContainer">
+                    <div class="item-row">
+                        <input type="text" placeholder="Produktnamn" id="itemName">
+                        <input type="number" placeholder="Antal" id="itemQty" value="1" min="1">
+                        <input type="number" placeholder="Pris (kr)" id="itemPrice" step="0.01">
+                        <button class="btn-primary" onclick="addItem()">➕ Lägg till</button>
+                    </div>
+                </div>
+                
+                <div id="itemsList"></div>
+                
+                <div class="form-group">
+                    <label>Rabatt (%)</label>
+                    <input type="number" id="discount" value="0" min="0" max="100" step="1" onchange="updateTotal()">
+                </div>
+                
+                <div class="total-display" id="totalDisplay">
+                    <h3>Totalt: 0.00 kr</h3>
+                </div>
+            </div>
+            
+            <!-- PDF Generation Section -->
+            <div class="section">
+                <h2>📄 PDF-generering</h2>
+                
+                <div class="form-group">
+                    <label>
+                        <input type="checkbox" id="includeAgreement" style="width: auto; margin-right: 5px;">
+                        Inkludera affärsavtal i PDF
+                    </label>
+                </div>
+                
+                <div class="alert alert-warning">
+                    <strong>⚠️ Notera:</strong> Saknade kunduppgifter markeras tydligt i PDF:en.
+                    Se till att alla obligatoriska fält är ifyllda för ett professionellt resultat.
+                </div>
+                
+                <div class="button-group">
+                    <button class="btn-primary" onclick="generatePDF()">📑 Generera PDF</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentCustomerId = null;
+        let currentQuoteId = null;
+        let items = [];
+        
+        // Load customers on page load
+        window.onload = function() {
+            loadCustomers();
+            updateTotal();
+        };
+        
+        // Customer Management
+        async function loadCustomers() {
+            try {
+                const response = await fetch('/api/customers');
+                const customers = await response.json();
+                
+                const customerList = document.getElementById('customerList');
+                const customerSelect = document.getElementById('quoteCustomerSelect');
+                
+                customerList.innerHTML = '';
+                customerSelect.innerHTML = '<option value="">-- Välj kund --</option>';
+                
+                Object.values(customers).forEach(customer => {
+                    // Add to list
+                    const item = document.createElement('div');
+                    item.className = 'customer-item';
+                    
+                    const nameStrong = document.createElement('strong');
+                    nameStrong.textContent = customer.name;
+                    const emailSmall = document.createElement('small');
+                    emailSmall.textContent = customer.invoice_email || 'Ingen mejl';
+                    
+                    item.appendChild(nameStrong);
+                    item.appendChild(document.createElement('br'));
+                    item.appendChild(emailSmall);
+                    
+                    item.addEventListener('click', function() { 
+                        selectCustomer(customer.id, this); 
+                    });
+                    customerList.appendChild(item);
+                    
+                    // Add to select
+                    const option = document.createElement('option');
+                    option.value = customer.id;
+                    option.textContent = customer.name;
+                    customerSelect.appendChild(option);
+                });
+            } catch (error) {
+                showAlert('customerAlert', 'Kunde inte ladda kunder: ' + error.message, 'error');
+            }
+        }
+        
+        async function selectCustomer(customerId, clickedElement) {
+            try {
+                const response = await fetch(`/api/customers/${customerId}`);
+                const customer = await response.json();
+                
+                currentCustomerId = customerId;
+                document.getElementById('customerName').value = customer.name || '';
+                document.getElementById('customerAddress').value = customer.address || '';
+                document.getElementById('customerContact').value = customer.contact || '';
+                document.getElementById('customerInvoiceEmail').value = customer.invoice_email || '';
+                document.getElementById('customerInvoiceAddress').value = customer.invoice_address || '';
+                
+                // Update UI
+                document.querySelectorAll('.customer-item').forEach(item => {
+                    item.classList.remove('selected');
+                });
+                if (clickedElement) {
+                    clickedElement.classList.add('selected');
+                }
+            } catch (error) {
+                showAlert('customerAlert', 'Kunde inte ladda kund: ' + error.message, 'error');
+            }
+        }
+        
+        async function saveCustomer() {
+            const name = document.getElementById('customerName').value;
+            const invoiceEmail = document.getElementById('customerInvoiceEmail').value;
+            
+            if (!name) {
+                showAlert('customerAlert', 'Kundnamn är obligatoriskt', 'error');
+                return;
+            }
+            
+            const customerData = {
+                name: name,
+                address: document.getElementById('customerAddress').value,
+                contact: document.getElementById('customerContact').value,
+                invoice_email: invoiceEmail,
+                invoice_address: document.getElementById('customerInvoiceAddress').value
+            };
+            
+            try {
+                let response;
+                if (currentCustomerId) {
+                    customerData.id = currentCustomerId;
+                    response = await fetch(`/api/customers/${currentCustomerId}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(customerData)
+                    });
+                } else {
+                    response = await fetch('/api/customers', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(customerData)
+                    });
+                }
+                
+                const result = await response.json();
+                currentCustomerId = result.id;
+                
+                showAlert('customerAlert', 'Kund sparad!', 'success');
+                loadCustomers();
+            } catch (error) {
+                showAlert('customerAlert', 'Kunde inte spara kund: ' + error.message, 'error');
+            }
+        }
+        
+        function newCustomer() {
+            currentCustomerId = null;
+            document.getElementById('customerName').value = '';
+            document.getElementById('customerAddress').value = '';
+            document.getElementById('customerContact').value = '';
+            document.getElementById('customerInvoiceEmail').value = '';
+            document.getElementById('customerInvoiceAddress').value = '';
+            
+            document.querySelectorAll('.customer-item').forEach(item => {
+                item.classList.remove('selected');
+            });
+            
+            showAlert('customerAlert', 'Ny kund - fyll i uppgifter', 'success');
+        }
+        
+        async function deleteCustomer() {
+            if (!currentCustomerId) {
+                showAlert('customerAlert', 'Ingen kund vald', 'error');
+                return;
+            }
+            
+            if (!confirm('Är du säker på att du vill ta bort denna kund?')) {
+                return;
+            }
+            
+            try {
+                await fetch(`/api/customers/${currentCustomerId}`, {
+                    method: 'DELETE'
+                });
+                
+                newCustomer();
+                loadCustomers();
+                showAlert('customerAlert', 'Kund borttagen', 'success');
+            } catch (error) {
+                showAlert('customerAlert', 'Kunde inte ta bort kund: ' + error.message, 'error');
+            }
+        }
+        
+        // Quote Management
+        async function saveQuote() {
+            const customerSelect = document.getElementById('quoteCustomerSelect');
+            const selectedCustomerId = customerSelect.value;
+            
+            if (!selectedCustomerId) {
+                showAlert('quoteAlert', 'Välj en kund från registret först', 'error');
+                return;
+            }
+            
+            const quoteData = {
+                customer_id: selectedCustomerId,
+                items: items,
+                discount: parseFloat(document.getElementById('discount').value) || 0,
+                notes: ''
+            };
+            
+            try {
+                let response;
+                if (currentQuoteId) {
+                    quoteData.id = currentQuoteId;
+                    response = await fetch(`/api/quotes/${currentQuoteId}`, {
+                        method: 'PUT',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(quoteData)
+                    });
+                } else {
+                    response = await fetch('/api/quotes', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify(quoteData)
+                    });
+                }
+                
+                const result = await response.json();
+                currentQuoteId = result.id;
+                
+                document.getElementById('currentQuoteId').textContent = `Aktuell offert-ID: ${currentQuoteId}`;
+                showAlert('quoteAlert', `Offert sparad! ID: ${currentQuoteId}`, 'success');
+            } catch (error) {
+                showAlert('quoteAlert', 'Kunde inte spara offert: ' + error.message, 'error');
+            }
+        }
+        
+        async function loadQuote() {
+            const quoteId = document.getElementById('quoteIdInput').value;
+            
+            if (!quoteId) {
+                showAlert('quoteAlert', 'Ange ett offert-ID', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`/api/quotes/${quoteId}`);
+                const quote = await response.json();
+                
+                if (quote.error) {
+                    showAlert('quoteAlert', 'Offert hittades inte', 'error');
+                    return;
+                }
+                
+                currentQuoteId = quote.id;
+                items = quote.items || [];
+                document.getElementById('discount').value = quote.discount || 0;
+                document.getElementById('quoteCustomerSelect').value = quote.customer_id || '';
+                
+                renderItems();
+                updateTotal();
+                
+                document.getElementById('currentQuoteId').textContent = `Aktuell offert-ID: ${currentQuoteId}`;
+                showAlert('quoteAlert', 'Offert laddad!', 'success');
+            } catch (error) {
+                showAlert('quoteAlert', 'Kunde inte ladda offert: ' + error.message, 'error');
+            }
+        }
+        
+        function newQuote() {
+            currentQuoteId = null;
+            items = [];
+            document.getElementById('discount').value = 0;
+            document.getElementById('quoteIdInput').value = '';
+            document.getElementById('currentQuoteId').textContent = '';
+            
+            renderItems();
+            updateTotal();
+            
+            showAlert('quoteAlert', 'Ny offert skapad', 'success');
+        }
+        
+        // Items Management
+        function addItem() {
+            const name = document.getElementById('itemName').value;
+            const qty = parseFloat(document.getElementById('itemQty').value) || 1;
+            const price = parseFloat(document.getElementById('itemPrice').value) || 0;
+            
+            if (!name || price <= 0) {
+                alert('Fyll i produktnamn och pris');
+                return;
+            }
+            
+            items.push({ name, quantity: qty, price });
+            
+            document.getElementById('itemName').value = '';
+            document.getElementById('itemQty').value = '1';
+            document.getElementById('itemPrice').value = '';
+            
+            renderItems();
+            updateTotal();
+        }
+        
+        function removeItem(index) {
+            items.splice(index, 1);
+            renderItems();
+            updateTotal();
+        }
+        
+        function renderItems() {
+            const container = document.getElementById('itemsList');
+            container.innerHTML = '';
+            
+            items.forEach((item, index) => {
+                const div = document.createElement('div');
+                div.className = 'quote-item';
+                
+                const contentDiv = document.createElement('div');
+                contentDiv.style.display = 'flex';
+                contentDiv.style.justifyContent = 'space-between';
+                contentDiv.style.alignItems = 'center';
+                
+                const infoDiv = document.createElement('div');
+                const nameStrong = document.createElement('strong');
+                nameStrong.textContent = item.name;
+                const detailsSmall = document.createElement('small');
+                detailsSmall.textContent = `${item.quantity} st × ${item.price.toFixed(2)} kr = ${(item.quantity * item.price).toFixed(2)} kr`;
+                
+                infoDiv.appendChild(nameStrong);
+                infoDiv.appendChild(document.createElement('br'));
+                infoDiv.appendChild(detailsSmall);
+                
+                const deleteBtn = document.createElement('button');
+                deleteBtn.className = 'btn-danger';
+                deleteBtn.textContent = '🗑️';
+                deleteBtn.addEventListener('click', () => removeItem(index));
+                
+                contentDiv.appendChild(infoDiv);
+                contentDiv.appendChild(deleteBtn);
+                div.appendChild(contentDiv);
+                container.appendChild(div);
+            });
+        }
+        
+        function updateTotal() {
+            const subtotal = items.reduce((sum, item) => sum + (item.quantity * item.price), 0);
+            const discount = parseFloat(document.getElementById('discount').value) || 0;
+            const total = subtotal * (1 - discount / 100);
+            
+            let html = `<h3>Delsumma: ${subtotal.toFixed(2)} kr</h3>`;
+            if (discount > 0) {
+                html += `<p>Rabatt: ${discount}%</p>`;
+                html += `<h3>Totalt: ${total.toFixed(2)} kr</h3>`;
+            }
+            
+            document.getElementById('totalDisplay').innerHTML = html;
+        }
+        
+        // PDF Generation
+        async function generatePDF() {
+            const customerSelect = document.getElementById('quoteCustomerSelect');
+            const selectedCustomerId = customerSelect.value;
+            
+            if (!selectedCustomerId) {
+                alert('Välj en kund från registret först');
+                return;
+            }
+            
+            // Get customer data
+            const customerResponse = await fetch(`/api/customers/${selectedCustomerId}`);
+            const customer = await customerResponse.json();
+            
+            const pdfData = {
+                customer: customer,
+                items: items,
+                discount: parseFloat(document.getElementById('discount').value) || 0,
+                include_agreement: document.getElementById('includeAgreement').checked
+            };
+            
+            try {
+                const response = await fetch('/api/generate-pdf', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(pdfData)
+                });
+                
+                const blob = await response.blob();
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `offert_${new Date().toISOString().split('T')[0]}.pdf`;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                alert('PDF genererad och nedladdad!');
+            } catch (error) {
+                alert('Kunde inte generera PDF: ' + error.message);
+            }
+        }
+        
+        // Utility
+        function showAlert(elementId, message, type) {
+            const alertDiv = document.getElementById(elementId);
+            alertDiv.className = `alert alert-${type}`;
+            alertDiv.textContent = message;
+            alertDiv.style.display = 'block';
+            
+            setTimeout(() => {
+                alertDiv.style.display = 'none';
+            }, 5000);
+        }
+    </script>
+</body>
+</html>
