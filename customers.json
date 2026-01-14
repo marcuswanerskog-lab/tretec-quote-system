@@ -1,0 +1,13 @@
+[
+  {
+    "name": "Acme Security AB",
+    "org_number": "556677-8899",
+    "phone": "08-555 1234",
+    "email": "",
+    "invoice_email": "",
+    "invoice_address": "",
+    "id": "cust_20260114170221",
+    "created_at": "2026-01-14T17:02:21.855951",
+    "updated_at": "2026-01-14T17:02:21.855957"
+  }
+]

@@ -25,7 +25,6 @@ function initializePage() {
     // Load data
     loadCustomers();
     loadProducts();
-    loadQuotes();
     loadQuotesList();
 }
 

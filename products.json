@@ -1,0 +1,37 @@
+[
+  {
+    "id": "prod_001",
+    "name": "Larmsystem Basic",
+    "category": "Larm",
+    "price": 5000,
+    "unit": "st"
+  },
+  {
+    "id": "prod_002",
+    "name": "Larmsystem Premium",
+    "category": "Larm",
+    "price": 12000,
+    "unit": "st"
+  },
+  {
+    "id": "prod_003",
+    "name": "Överfallslarm",
+    "category": "Larm",
+    "price": 3500,
+    "unit": "st"
+  },
+  {
+    "id": "prod_004",
+    "name": "Installation",
+    "category": "Tjänst",
+    "price": 850,
+    "unit": "timme"
+  },
+  {
+    "id": "prod_005",
+    "name": "Service",
+    "category": "Tjänst",
+    "price": 750,
+    "unit": "timme"
+  }
+]
