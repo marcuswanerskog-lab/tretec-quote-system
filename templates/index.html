@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tretec Offertssystem</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔒 Tretec Larm AB - Offertssystem</h1>
+            <p class="subtitle">Skapa, hantera och exportera offerter</p>
+        </header>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab-button active" onclick="showTab('quote')">Ny Offert</button>
+            <button class="tab-button" onclick="showTab('quotes')">Sparade Offerter</button>
+            <button class="tab-button" onclick="showTab('customers')">Kunder</button>
+            <button class="tab-button" onclick="showTab('products')">Produkter</button>
+        </div>
+
+        <!-- Quote Tab -->
+        <div id="quote-tab" class="tab-content active">
+            <div class="card">
+                <h2>Skapa Offert</h2>
+                
+                <!-- Load existing quote -->
+                <div class="form-group">
+                    <label>Ladda befintlig offert:</label>
+                    <select id="load-quote-select">
+                        <option value="">-- Välj offert --</option>
+                    </select>
+                    <button onclick="loadSelectedQuote()" class="btn btn-secondary">Ladda</button>
+                </div>
+
+                <!-- Quote metadata -->
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="quote-number">Offertnummer:</label>
+                        <input type="text" id="quote-number" placeholder="t.ex. 2026-001">
+                    </div>
+                    <div class="form-group">
+                        <label for="quote-date">Datum:</label>
+                        <input type="date" id="quote-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="valid-until">Giltig till:</label>
+                        <input type="date" id="valid-until">
+                    </div>
+                </div>
+
+                <!-- Customer selection -->
+                <h3>Kunduppgifter</h3>
+                <div class="customer-section">
+                    <div class="form-group">
+                        <label>Välj kund:</label>
+                        <select id="customer-select" onchange="selectCustomer()">
+                            <option value="">-- Välj kund eller skapa ny --</option>
+                        </select>
+                        <button onclick="showNewCustomerForm()" class="btn btn-secondary">Ny Kund</button>
+                    </div>
+
+                    <!-- Missing info warnings -->
+                    <div id="customer-warnings" class="warnings"></div>
+
+                    <!-- Customer details -->
+                    <div id="customer-details" style="display: none;">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customer-name">Namn: <span class="required">*</span></label>
+                                <input type="text" id="customer-name" placeholder="Företagsnamn">
+                            </div>
+                            <div class="form-group">
+                                <label for="customer-org">Organisationsnummer:</label>
+                                <input type="text" id="customer-org" placeholder="XXXXXX-XXXX">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customer-phone">Telefon: <span class="required">*</span></label>
+                                <input type="text" id="customer-phone" placeholder="XXX-XXXXXXX">
+                            </div>
+                            <div class="form-group">
+                                <label for="customer-email">E-post:</label>
+                                <input type="email" id="customer-email" placeholder="kontakt@exempel.se">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="customer-invoice-email">Fakturamejl: <span class="required">*</span></label>
+                                <input type="email" id="customer-invoice-email" placeholder="faktura@exempel.se">
+                            </div>
+                            <div class="form-group">
+                                <label for="customer-invoice-address">Fakturaadress: <span class="required">*</span></label>
+                                <input type="text" id="customer-invoice-address" placeholder="Gatuadress, Postnr Ort">
+                            </div>
+                        </div>
+                        <button onclick="saveCurrentCustomer()" class="btn btn-secondary">Spara Kunduppgifter</button>
+                    </div>
+                </div>
+
+                <!-- Products/Services -->
+                <h3>Produkter och Tjänster</h3>
+                <div class="products-section">
+                    <div class="form-group">
+                        <label>Lägg till produkt:</label>
+                        <input type="text" id="product-search" placeholder="Sök produkt..." onkeyup="searchProducts()">
+                        <select id="product-select" size="5">
+                        </select>
+                        <button onclick="addProductToQuote()" class="btn btn-secondary">Lägg till</button>
+                    </div>
+
+                    <!-- Quote items table -->
+                    <table id="quote-items-table" class="items-table">
+                        <thead>
+                            <tr>
+                                <th>Produkt/Tjänst</th>
+                                <th>Antal</th>
+                                <th>Á-pris</th>
+                                <th>Rabatt %</th>
+                                <th>Summa</th>
+                                <th>Åtgärd</th>
+                            </tr>
+                        </thead>
+                        <tbody id="quote-items">
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="4" class="text-right"><strong>Summa exkl. moms:</strong></td>
+                                <td id="subtotal">0 kr</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-right"><strong>Moms (25%):</strong></td>
+                                <td id="vat">0 kr</td>
+                                <td></td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" class="text-right"><strong>Totalt inkl. moms:</strong></td>
+                                <td id="total"><strong>0 kr</strong></td>
+                                <td></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+
+                <!-- Notes -->
+                <div class="form-group">
+                    <label for="quote-notes">Anteckningar:</label>
+                    <textarea id="quote-notes" rows="3" placeholder="Ytterligare information..."></textarea>
+                </div>
+
+                <!-- Agreement text -->
+                <div class="form-group">
+                    <label for="agreement-text">Affärsavtal (anpassningsbar text):</label>
+                    <textarea id="agreement-text" rows="5" placeholder="Lämna tomt för standardtext eller skriv egen text för affärsavtalet..."></textarea>
+                    <small>Tips: Här kan du anpassa villkor, betalningsvillkor, garantier etc.</small>
+                </div>
+
+                <!-- Actions -->
+                <div class="actions">
+                    <button onclick="saveQuote()" class="btn btn-primary">💾 Spara Offert</button>
+                    <button onclick="generatePDF()" class="btn btn-success">📄 Generera PDF</button>
+                    <button onclick="clearQuote()" class="btn btn-secondary">🗑️ Rensa</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Saved Quotes Tab -->
+        <div id="quotes-tab" class="tab-content">
+            <div class="card">
+                <h2>Sparade Offerter</h2>
+                <div id="quotes-list"></div>
+            </div>
+        </div>
+
+        <!-- Customers Tab -->
+        <div id="customers-tab" class="tab-content">
+            <div class="card">
+                <h2>Kundregister</h2>
+                <button onclick="showNewCustomerModal()" class="btn btn-primary">Lägg till ny kund</button>
+                <div id="customers-list"></div>
+            </div>
+        </div>
+
+        <!-- Products Tab -->
+        <div id="products-tab" class="tab-content">
+            <div class="card">
+                <h2>Produkter</h2>
+                <div class="form-group">
+                    <label>Kategori:</label>
+                    <select id="product-category-filter" onchange="loadProducts()">
+                        <option value="">Alla kategorier</option>
+                        <option value="Larm">Larm</option>
+                        <option value="Ellås">Ellås</option>
+                        <option value="Tjänst">Tjänst</option>
+                    </select>
+                </div>
+                <div id="products-list"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal for new customer -->
+    <div id="customer-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeCustomerModal()">&times;</span>
+            <h2>Ny Kund</h2>
+            <div class="form-group">
+                <label for="modal-customer-name">Namn: <span class="required">*</span></label>
+                <input type="text" id="modal-customer-name">
+            </div>
+            <div class="form-group">
+                <label for="modal-customer-org">Organisationsnummer:</label>
+                <input type="text" id="modal-customer-org">
+            </div>
+            <div class="form-group">
+                <label for="modal-customer-phone">Telefon: <span class="required">*</span></label>
+                <input type="text" id="modal-customer-phone">
+            </div>
+            <div class="form-group">
+                <label for="modal-customer-email">E-post:</label>
+                <input type="email" id="modal-customer-email">
+            </div>
+            <div class="form-group">
+                <label for="modal-customer-invoice-email">Fakturamejl: <span class="required">*</span></label>
+                <input type="email" id="modal-customer-invoice-email">
+            </div>
+            <div class="form-group">
+                <label for="modal-customer-invoice-address">Fakturaadress: <span class="required">*</span></label>
+                <textarea id="modal-customer-invoice-address" rows="2"></textarea>
+            </div>
+            <button onclick="createCustomerFromModal()" class="btn btn-primary">Skapa Kund</button>
+        </div>
+    </div>
+
+    <script src="/static/script.js"></script>
+</body>
+</html>

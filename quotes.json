@@ -1,0 +1,37 @@
+[
+  {
+    "quote_number": "2026-001",
+    "date": "2026-01-14",
+    "valid_until": "2026-02-13",
+    "customer_id": "cust_20260114170221",
+    "customer": {
+      "name": "Acme Security AB",
+      "org_number": "556677-8899",
+      "phone": "08-555 1234",
+      "email": "",
+      "invoice_email": "",
+      "invoice_address": ""
+    },
+    "items": [
+      {
+        "id": "prod_002",
+        "name": "Larmsystem Premium",
+        "quantity": 1,
+        "price": 12000,
+        "discount": 0
+      },
+      {
+        "id": "prod_004",
+        "name": "Installation",
+        "quantity": 4,
+        "price": 850,
+        "discount": 0
+      }
+    ],
+    "notes": "Installation planeras för vecka 5. Inkluderar konfiguration och utbildning av personal.",
+    "agreement_text": "Denna offert är giltig i 60 dagar. Betalningsvillkor: 30 dagar netto. Installation utförs av certifierade tekniker. 24 månaders garanti på produkter och installation. Service och support ingår i 12 månader.",
+    "id": "quote_20260114170425",
+    "created_at": "2026-01-14T17:04:25.341329",
+    "updated_at": "2026-01-14T17:04:25.341334"
+  }
+]
