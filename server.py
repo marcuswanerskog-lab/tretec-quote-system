@@ -16,10 +16,7 @@ from reportlab.lib import colors
 from reportlab.lib.units import mm
 from reportlab.platypus import SimpleDocTemplate, Table, TableStyle, Paragraph, Spacer, Image
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
-from reportlab.lib.enums import TA_CENTER, TA_RIGHT, TA_LEFT
-from reportlab.pdfgen import canvas
-import requests
-from bs4 import BeautifulSoup
+from reportlab.lib.enums import TA_CENTER
 
 app = Flask(__name__)
 CORS(app)
@@ -468,4 +465,5 @@ if __name__ == '__main__':
     init_data_files()
     print("Tretec Quote System Server")
     print("Starting server on http://localhost:5000")
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    print("NOTE: For production use, set debug=False and use a production WSGI server like Gunicorn")
+    app.run(debug=False, host='0.0.0.0', port=5000)

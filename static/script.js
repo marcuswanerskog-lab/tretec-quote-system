@@ -241,8 +241,8 @@ async function loadCustomersList() {
 
 function editCustomer(customerId) {
     // Switch to quote tab and select customer
-    showTab('quote');
-    document.querySelector('.tab-button').click(); // Click first tab to activate it properly
+    const tabs = document.querySelectorAll('.tab-button');
+    tabs[0].click(); // Click "Ny Offert" tab
     
     setTimeout(() => {
         document.getElementById('customer-select').value = customerId;
@@ -545,8 +545,8 @@ async function loadQuote(quoteId) {
         updateQuoteItemsTable();
         
         // Switch to quote tab
-        const quoteTab = document.querySelector('.tab-button');
-        quoteTab.click();
+        const tabs = document.querySelectorAll('.tab-button');
+        tabs[0].click(); // Click "Ny Offert" tab
         
         alert('Offert laddad!');
     } catch (error) {
