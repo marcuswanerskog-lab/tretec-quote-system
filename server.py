@@ -41,7 +41,7 @@ def load_customers():
     try:
         with open(CUSTOMERS_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
-    except:
+    except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
 def save_customers(customers):
@@ -53,7 +53,7 @@ def load_quotes():
     try:
         with open(QUOTES_FILE, 'r', encoding='utf-8') as f:
             return json.load(f)
-    except:
+    except (FileNotFoundError, json.JSONDecodeError):
         return {}
 
 def save_quotes(quotes):
@@ -189,7 +189,8 @@ def generate_pdf():
             logo = Image(LOGO_PATH, width=50*mm, height=50*mm, kind='proportional')
             elements.append(logo)
             elements.append(Spacer(1, 10*mm))
-        except:
+        except (IOError, OSError):
+            # Skip logo if there's an error loading the image
             pass
     
     # Title
@@ -313,4 +314,6 @@ if __name__ == '__main__':
     init_storage()
     print("Starting Tretec Quote System Server...")
     print("Server running on http://localhost:5000")
+    # Note: debug=True is for development only. For production, set debug=False
+    # and consider using a production WSGI server like gunicorn
     app.run(debug=True, host='0.0.0.0', port=5000)

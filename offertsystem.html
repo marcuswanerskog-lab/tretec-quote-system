@@ -430,7 +430,7 @@
                     const item = document.createElement('div');
                     item.className = 'customer-item';
                     item.innerHTML = `<strong>${customer.name}</strong><br><small>${customer.invoice_email || 'Ingen mejl'}</small>`;
-                    item.onclick = () => selectCustomer(customer.id);
+                    item.onclick = function() { selectCustomer(customer.id, this); };
                     customerList.appendChild(item);
                     
                     // Add to select
@@ -444,7 +444,7 @@
             }
         }
         
-        async function selectCustomer(customerId) {
+        async function selectCustomer(customerId, clickedElement) {
             try {
                 const response = await fetch(`/api/customers/${customerId}`);
                 const customer = await response.json();
@@ -460,7 +460,9 @@
                 document.querySelectorAll('.customer-item').forEach(item => {
                     item.classList.remove('selected');
                 });
-                event.target.classList.add('selected');
+                if (clickedElement) {
+                    clickedElement.classList.add('selected');
+                }
             } catch (error) {
                 showAlert('customerAlert', 'Kunde inte ladda kund: ' + error.message, 'error');
             }
