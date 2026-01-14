@@ -5,9 +5,11 @@
 ```
 tretec-quote-system/
 ├── scripts/
-│   └── server.py          # Flask-server med alla backend-funktioner
+│   └── server.py          # Flask-server med API och PDF-generering
 ├── templates/
-│   └── index.html         # Webbgränssnitt (HTML + CSS + JavaScript)
+│   ├── index.html         # Webbgränssnitt
+│   ├── agreement_terms.py # Avtalsvillkor och mallar
+│   └── README_AGREEMENT_TERMS.md  # Guide för anpassning av avtal
 ├── static/
 │   └── Treteclogo.jpg     # Företagslogga
 ├── requirements.txt       # Python-beroenden
@@ -52,12 +54,39 @@ tretec-quote-system/
 - Villkor (giltighet, betalning)
 
 ### Affärsavtal-PDF
-- Samma layout som offert
-- **Ytterligare fält**:
-  - Avtalsnummer
-  - Avtalsperiod
-  - Uppsägningstid
-  - Signatursektion för båda parter
+- **Multi-sida professionellt dokument** (4 sidor)
+- **Fullständiga juridiska villkor** med 11 paragrafer
+- **Anpassningsbara fält**:
+  - Kundinformation (namn, företag, telefon, email)
+  - Avtalsnummer (auto-genererat eller manuellt)
+  - Avtalsperiod (12/24/36 månader med automatiska datum)
+  - Installationsdatum
+  - Betalningsplan (5 fördefinierade alternativ):
+    - 100% vid leverans
+    - 50/50 förskott/installation
+    - 30/70 förskott/installation  
+    - 3 delbetalningar
+    - 4 delbetalningar
+  - Garantiperiod (24/36/60 månader)
+  - Supportnivå (Bas/Standard/Premium)
+  - Särskilda villkor (fritext)
+- **Automatisk beräkning**:
+  - Totalsumma exkl. moms
+  - Moms (25%)
+  - Totalt inkl. moms
+  - Avtalsdatum (start/slut)
+- **Avtalsstruktur**:
+  - Sida 1: Försättssida, parter, omfattning
+  - Sida 2: Specifikation, priser, leverans, betalning
+  - Sida 3: Avtalstid, garanti, support
+  - Sida 4: Övriga villkor, signaturer
+- **Signatursektion** för båda parter med datum
+
+### Avtalsmall (agreement_terms.py)
+- Separerat innehåll från kod för enkel anpassning
+- Fullständiga svenska avtalsvillkor
+- Dynamiska fält för automatisk ifyllning
+- Se `templates/README_AGREEMENT_TERMS.md` för anpassningsguide
 
 ## Säkerhet
 
