@@ -11,13 +11,26 @@ from reportlab.lib.pagesizes import A4
 from reportlab.lib import colors
 from reportlab.lib.units import mm
 from reportlab.pdfgen import canvas
-from reportlab.platypus import Table, TableStyle
+from reportlab.platypus import Table, TableStyle, Paragraph, Spacer
+from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+from reportlab.lib.enums import TA_LEFT, TA_CENTER, TA_JUSTIFY
 import requests
 from bs4 import BeautifulSoup
 import io
 import logging
-from datetime import datetime
+from datetime import datetime, timedelta
 import traceback
+import sys
+import os
+
+# Add templates directory to path for importing agreement terms
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', 'templates'))
+from agreement_terms import (
+    AGREEMENT_TERMS, 
+    PAYMENT_PLAN_TEMPLATES, 
+    WARRANTY_PERIODS, 
+    SERVICE_LEVELS
+)
 
 app = Flask(__name__, 
             template_folder='../templates',
@@ -319,68 +332,155 @@ def generate_quote_pdf(data):
 
 
 def generate_agreement_pdf(data):
-    """Generera PDF för affärsavtal med samma layout som offert"""
+    """Generera omfattande PDF för affärsavtal med fullständiga avtalsvillkor"""
     buffer = io.BytesIO()
     c = canvas.Canvas(buffer, pagesize=A4)
     width, height = A4
     
-    # Företagslogga och header (samma som offert)
-    y_position = height - 40*mm
-    c.setFont("Helvetica-Bold", 20)
-    c.drawString(40*mm, y_position, COMPANY_INFO['name'])
+    # Extrahera data
+    customer = data.get('customer', {})
+    items = data.get('items', [])
+    contract_period = data.get('contract_period', '12 månader')
+    agreement_number = data.get('agreement_number', f'AVT-{datetime.now().strftime("%Y%m%d-%H%M%S")}')
+    payment_plan = data.get('payment_plan', 'split_50_50')
+    warranty_period = data.get('warranty_period', 'standard')
+    service_level = data.get('service_level', 'standard')
+    installation_date = data.get('installation_date', (datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'))
+    special_terms = data.get('special_terms', 'Inga särskilda villkor.')
     
-    c.setFont("Helvetica", 10)
-    y_position -= 15
-    c.drawString(40*mm, y_position, COMPANY_INFO['address'])
-    y_position -= 12
-    c.drawString(40*mm, y_position, COMPANY_INFO['postal'])
-    y_position -= 12
-    c.drawString(40*mm, y_position, f"Tel: {COMPANY_INFO['phone']}")
-    y_position -= 12
-    c.drawString(40*mm, y_position, f"Email: {COMPANY_INFO['email']}")
+    # Beräkna totaler
+    total = 0
+    for item in items:
+        qty = item.get('quantity', 1)
+        price = item.get('price', 0)
+        discount = item.get('discount', 0)
+        item_total = qty * price * (1 - discount/100)
+        total += item_total
+    
+    vat = total * 0.25
+    total_with_vat = total + vat
+    
+    # Beräkna avtalsdatum
+    contract_start = datetime.now()
+    if '12' in contract_period:
+        contract_end = contract_start + timedelta(days=365)
+    elif '24' in contract_period:
+        contract_end = contract_start + timedelta(days=730)
+    elif '36' in contract_period:
+        contract_end = contract_start + timedelta(days=1095)
+    else:
+        contract_end = contract_start + timedelta(days=365)
+    
+    # ===== SIDA 1: FÖRSÄTTSSIDA OCH PARTER =====
+    y_pos = height - 40*mm
+    
+    # Header med företagsinfo
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(40*mm, y_pos, COMPANY_INFO['name'])
+    
+    c.setFont("Helvetica", 9)
+    y_pos -= 12
+    c.drawString(40*mm, y_pos, COMPANY_INFO['address'])
+    y_pos -= 10
+    c.drawString(40*mm, y_pos, COMPANY_INFO['postal'])
+    y_pos -= 10
+    c.drawString(40*mm, y_pos, f"Tel: {COMPANY_INFO['phone']} | E-post: {COMPANY_INFO['email']}")
+    y_pos -= 10
+    c.drawString(40*mm, y_pos, f"Org.nr: {COMPANY_INFO['org_nr']}")
     
     # Avtalstitel
-    y_position -= 25
-    c.setFont("Helvetica-Bold", 16)
-    c.drawString(40*mm, y_position, "AFFÄRSAVTAL")
+    y_pos -= 30
+    c.setFont("Helvetica-Bold", 18)
+    c.drawCentredString(width/2, y_pos, AGREEMENT_TERMS['title'])
     
-    # Kundinformation (samma som offert)
-    y_position -= 20
-    c.setFont("Helvetica-Bold", 11)
-    c.drawString(40*mm, y_position, "Kund:")
+    # Avtalsnummer och datum
+    y_pos -= 20
     c.setFont("Helvetica", 10)
+    c.drawCentredString(width/2, y_pos, f"Avtalsnummer: {agreement_number}")
+    y_pos -= 12
+    c.drawCentredString(width/2, y_pos, f"Datum: {contract_start.strftime('%Y-%m-%d')}")
     
-    customer = data.get('customer', {})
-    y_position -= 15
-    c.drawString(40*mm, y_position, customer.get('name', 'N/A'))
-    if customer.get('company'):
-        y_position -= 12
-        c.drawString(40*mm, y_position, customer.get('company'))
-    
-    # Datum
-    y_position -= 20
+    # Inledning
+    y_pos -= 25
     c.setFont("Helvetica", 10)
-    c.drawString(40*mm, y_position, f"Datum: {datetime.now().strftime('%Y-%m-%d')}")
-    c.drawString(40*mm, y_position - 12, f"Avtalsnummer: {data.get('agreement_number', 'N/A')}")
+    intro_lines = AGREEMENT_TERMS['introduction'].strip().split('\n')
+    for line in intro_lines:
+        if line.strip():
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 12
     
-    # Produkter och tjänster tabell (samma layout som offert)
-    y_position -= 25
+    # Parter
+    y_pos -= 20
     c.setFont("Helvetica-Bold", 12)
-    c.drawString(40*mm, y_position, "Avtalsspecifikation:")
+    c.drawString(40*mm, y_pos, "PARTER")
     
-    y_position -= 15
+    y_pos -= 18
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(40*mm, y_pos, "Leverantör:")
+    c.setFont("Helvetica", 9)
+    y_pos -= 12
+    c.drawString(40*mm, y_pos, COMPANY_INFO['name'])
+    y_pos -= 10
+    c.drawString(40*mm, y_pos, f"Org.nr: {COMPANY_INFO['org_nr']}")
+    y_pos -= 10
+    c.drawString(40*mm, y_pos, COMPANY_INFO['address'])
+    y_pos -= 10
+    c.drawString(40*mm, y_pos, COMPANY_INFO['postal'])
+    y_pos -= 10
+    c.drawString(40*mm, y_pos, f"Tel: {COMPANY_INFO['phone']}")
+    y_pos -= 10
+    c.drawString(40*mm, y_pos, f"E-post: {COMPANY_INFO['email']}")
+    
+    y_pos -= 18
+    c.setFont("Helvetica-Bold", 10)
+    c.drawString(40*mm, y_pos, "Kund:")
+    c.setFont("Helvetica", 9)
+    y_pos -= 12
+    c.drawString(40*mm, y_pos, customer.get('name', 'N/A'))
+    if customer.get('company'):
+        y_pos -= 10
+        c.drawString(40*mm, y_pos, customer.get('company', ''))
+    if customer.get('email'):
+        y_pos -= 10
+        c.drawString(40*mm, y_pos, f"E-post: {customer.get('email', '')}")
+    if customer.get('phone'):
+        y_pos -= 10
+        c.drawString(40*mm, y_pos, f"Tel: {customer.get('phone', '')}")
+    
+    # Avtalsomfattning
+    y_pos -= 25
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§1 AVTALETS OMFATTNING")
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    scope_lines = AGREEMENT_TERMS['scope_section'].strip().split('\n')
+    for line in scope_lines:
+        if line.strip() and not line.strip().startswith('§1'):
+            if y_pos < 50*mm:
+                c.showPage()
+                y_pos = height - 40*mm
+                c.setFont("Helvetica", 9)
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
+    
+    # Ny sida för specifikation
+    c.showPage()
+    y_pos = height - 40*mm
+    
+    # ===== SIDA 2: SPECIFIKATION OCH PRISER =====
+    c.setFont("Helvetica-Bold", 14)
+    c.drawString(40*mm, y_pos, "SPECIFIKATION OCH PRISER")
+    
+    y_pos -= 20
+    # Produkter och tjänster tabell
     table_data = [['Beskrivning', 'Antal', 'Pris/st', 'Rabatt', 'Summa']]
-    
-    items = data.get('items', [])
-    total = 0
     
     for item in items:
         qty = item.get('quantity', 1)
         price = item.get('price', 0)
         discount = item.get('discount', 0)
-        
         item_total = qty * price * (1 - discount/100)
-        total += item_total
         
         table_data.append([
             item.get('name', ''),
@@ -390,7 +490,6 @@ def generate_agreement_pdf(data):
             f"{item_total:,.0f} kr"
         ])
     
-    # Rita tabell (samma stil som offert)
     t = Table(table_data, colWidths=[80*mm, 20*mm, 25*mm, 20*mm, 25*mm])
     t.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.grey),
@@ -406,42 +505,240 @@ def generate_agreement_pdf(data):
     ]))
     
     table_height = len(table_data) * 20
-    y_position -= table_height
+    y_pos -= table_height
     t.wrapOn(c, width, height)
-    t.drawOn(c, 40*mm, y_position)
+    t.drawOn(c, 40*mm, y_pos)
     
-    # Totalt (samma som offert)
-    y_position -= 25
-    c.setFont("Helvetica-Bold", 12)
-    c.drawString(145*mm, y_position, f"Totalt: {total:,.0f} kr")
-    
-    # Moms
-    y_position -= 15
+    # Totaler
+    y_pos -= 25
     c.setFont("Helvetica", 10)
-    vat = total * 0.25
-    c.drawString(145*mm, y_position, f"Varav moms (25%): {vat:,.0f} kr")
-    
-    # Avtalsvillkor (skillnad mot offert)
-    y_position -= 25
+    c.drawString(145*mm, y_pos, f"Summa exkl. moms: {total:,.0f} kr")
+    y_pos -= 12
+    c.drawString(145*mm, y_pos, f"Moms (25%): {vat:,.0f} kr")
+    y_pos -= 12
     c.setFont("Helvetica-Bold", 11)
-    c.drawString(40*mm, y_position, "Avtalsvillkor:")
+    c.drawString(145*mm, y_pos, f"TOTALT inkl. moms: {total_with_vat:,.0f} kr")
+    
+    # Leverans och installation
+    y_pos -= 30
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§2 LEVERANS OCH INSTALLATION")
+    
+    y_pos -= 15
     c.setFont("Helvetica", 9)
-    y_position -= 12
-    c.drawString(40*mm, y_position, f"Avtalsperiod: {data.get('contract_period', '12 månader')}")
-    y_position -= 10
-    c.drawString(40*mm, y_position, "Betalningsvillkor: 30 dagar netto.")
-    y_position -= 10
-    c.drawString(40*mm, y_position, "Uppsägningstid: 3 månader.")
+    delivery_text = AGREEMENT_TERMS['delivery_section'].format(
+        installation_date=installation_date
+    )
+    for line in delivery_text.strip().split('\n'):
+        if line.strip() and not line.strip().startswith('§2'):
+            if y_pos < 50*mm:
+                c.showPage()
+                y_pos = height - 40*mm
+                c.setFont("Helvetica", 9)
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
     
-    # Signaturer
-    y_position -= 30
-    c.setFont("Helvetica-Bold", 10)
-    c.drawString(40*mm, y_position, "För Tretec Larm AB")
-    c.drawString(120*mm, y_position, "För kund")
+    # Betalningsvillkor
+    y_pos -= 20
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§3 BETALNINGSVILLKOR")
     
-    y_position -= 25
-    c.line(40*mm, y_position, 90*mm, y_position)
-    c.line(120*mm, y_position, 170*mm, y_position)
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    # Hämta betalningsplan
+    payment_plan_text = PAYMENT_PLAN_TEMPLATES.get(payment_plan, PAYMENT_PLAN_TEMPLATES['split_50_50'])
+    if 'monthly' in payment_plan.lower():
+        payment_plan_text = payment_plan_text.format(
+            first_payment_date=(datetime.now() + timedelta(days=30)).strftime('%Y-%m-%d'),
+            contract_period=contract_period
+        )
+    
+    payment_text = AGREEMENT_TERMS['payment_section'].format(
+        total_amount=f"{total:,.0f}",
+        payment_plan=payment_plan_text
+    )
+    
+    for line in payment_text.strip().split('\n'):
+        if line.strip() and not line.strip().startswith('§3'):
+            if y_pos < 50*mm:
+                c.showPage()
+                y_pos = height - 40*mm
+                c.setFont("Helvetica", 9)
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
+    
+    # Ny sida för avtalsvillkor
+    c.showPage()
+    y_pos = height - 40*mm
+    
+    # ===== SIDA 3: AVTALSVILLKOR =====
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§4 AVTALSTID OCH UPPSÄGNING")
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    period_text = AGREEMENT_TERMS['contract_period_section'].format(
+        contract_start_date=contract_start.strftime('%Y-%m-%d'),
+        contract_end_date=contract_end.strftime('%Y-%m-%d'),
+        contract_period=contract_period
+    )
+    
+    for line in period_text.strip().split('\n'):
+        if line.strip() and not line.strip().startswith('§4'):
+            if y_pos < 50*mm:
+                c.showPage()
+                y_pos = height - 40*mm
+                c.setFont("Helvetica", 9)
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
+    
+    # Garanti
+    y_pos -= 20
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§5 GARANTI OCH ANSVAR")
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    warranty_text = AGREEMENT_TERMS['warranty_section'].format(
+        warranty_period=WARRANTY_PERIODS.get(warranty_period, WARRANTY_PERIODS['standard'])
+    )
+    
+    for line in warranty_text.strip().split('\n'):
+        if line.strip() and not line.strip().startswith('§5'):
+            if y_pos < 50*mm:
+                c.showPage()
+                y_pos = height - 40*mm
+                c.setFont("Helvetica", 9)
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
+    
+    # Support och underhåll
+    y_pos -= 20
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§6 SUPPORT OCH UNDERHÅLL")
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    support_text = AGREEMENT_TERMS['support_section'].format(
+        company_phone=COMPANY_INFO['phone'],
+        company_email=COMPANY_INFO['email']
+    )
+    
+    for line in support_text.strip().split('\n'):
+        if line.strip() and not line.strip().startswith('§6'):
+            if y_pos < 50*mm:
+                c.showPage()
+                y_pos = height - 40*mm
+                c.setFont("Helvetica", 9)
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
+    
+    # Ny sida för övriga villkor
+    if y_pos < 150*mm:
+        c.showPage()
+        y_pos = height - 40*mm
+    
+    # ===== SIDA 4: ÖVRIGA VILLKOR OCH SIGNATURER =====
+    
+    # Ändringar och tillägg
+    y_pos -= 20
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§7 ÄNDRINGAR OCH TILLÄGG")
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    for line in AGREEMENT_TERMS['changes_section'].strip().split('\n'):
+        if line.strip() and not line.strip().startswith('§7'):
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
+    
+    # Force majeure
+    y_pos -= 15
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§8 FORCE MAJEURE")
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    for line in AGREEMENT_TERMS['force_majeure_section'].strip().split('\n'):
+        if line.strip() and not line.strip().startswith('§8'):
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
+    
+    # Sekretess
+    y_pos -= 15
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§9 SEKRETESS")
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    for line in AGREEMENT_TERMS['confidentiality_section'].strip().split('\n'):
+        if line.strip() and not line.strip().startswith('§9'):
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
+    
+    # Tvister
+    y_pos -= 15
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "§10 TVISTER")
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    for line in AGREEMENT_TERMS['disputes_section'].strip().split('\n'):
+        if line.strip() and not line.strip().startswith('§10'):
+            c.drawString(40*mm, y_pos, line.strip())
+            y_pos -= 10
+    
+    # Särskilda villkor
+    if special_terms and special_terms != 'Inga särskilda villkor.':
+        y_pos -= 15
+        c.setFont("Helvetica-Bold", 12)
+        c.drawString(40*mm, y_pos, "§11 SÄRSKILDA VILLKOR")
+        
+        y_pos -= 15
+        c.setFont("Helvetica", 9)
+        c.drawString(40*mm, y_pos, special_terms)
+        y_pos -= 10
+    
+    # Signaturer - ny sida om inte tillräckligt med plats
+    if y_pos < 100*mm:
+        c.showPage()
+        y_pos = height - 40*mm
+    
+    y_pos -= 30
+    c.setFont("Helvetica-Bold", 12)
+    c.drawString(40*mm, y_pos, "UNDERSKRIFTER")
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 9)
+    c.drawString(40*mm, y_pos, "Detta avtal har upprättats i två exemplar varav parterna tagit var sitt.")
+    
+    y_pos -= 30
+    c.setFont("Helvetica", 9)
+    c.drawString(40*mm, y_pos, f"Datum: {contract_start.strftime('%Y-%m-%d')}")
+    
+    # Signaturområden
+    y_pos -= 40
+    c.setFont("Helvetica-Bold", 9)
+    c.drawString(40*mm, y_pos, f"För {COMPANY_INFO['name']}")
+    c.drawString(120*mm, y_pos, f"För {customer.get('company', customer.get('name', 'Kund'))}")
+    
+    y_pos -= 30
+    c.line(40*mm, y_pos, 95*mm, y_pos)
+    c.line(120*mm, y_pos, 175*mm, y_pos)
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 8)
+    c.drawString(40*mm, y_pos, "Namnförtydligande")
+    c.drawString(120*mm, y_pos, customer.get('name', ''))
+    
+    y_pos -= 20
+    c.line(40*mm, y_pos, 95*mm, y_pos)
+    c.line(120*mm, y_pos, 175*mm, y_pos)
+    
+    y_pos -= 15
+    c.setFont("Helvetica", 8)
+    c.drawString(40*mm, y_pos, "Ort och datum")
+    c.drawString(120*mm, y_pos, "Ort och datum")
     
     c.showPage()
     c.save()

@@ -416,6 +416,14 @@
                         <input type="email" id="agreement-customer-email">
                     </div>
                     <div class="form-group">
+                        <label for="agreement-customer-phone">Telefon</label>
+                        <input type="tel" id="agreement-customer-phone">
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2>Avtalsdetaljer</h2>
+                    <div class="form-group">
                         <label for="agreement-number">Avtalsnummer</label>
                         <input type="text" id="agreement-number" placeholder="Auto-genereras om tomt">
                     </div>
@@ -426,6 +434,40 @@
                             <option value="24 månader">24 månader</option>
                             <option value="36 månader">36 månader</option>
                         </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="installation-date">Planerat installationsdatum</label>
+                        <input type="date" id="installation-date">
+                    </div>
+                    <div class="form-group">
+                        <label for="payment-plan">Betalningsplan</label>
+                        <select id="payment-plan">
+                            <option value="full_payment">100% vid leverans</option>
+                            <option value="split_50_50" selected>50% förskott / 50% vid installation</option>
+                            <option value="split_30_70">30% förskott / 70% vid installation</option>
+                            <option value="installments_3">3 delbetalningar</option>
+                            <option value="installments_4">4 delbetalningar</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="warranty-period">Garantiperiod</label>
+                        <select id="warranty-period">
+                            <option value="standard" selected>24 månader (Standard)</option>
+                            <option value="extended">36 månader (Utökad)</option>
+                            <option value="premium">60 månader (Premium)</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="service-level">Supportnivå</label>
+                        <select id="service-level">
+                            <option value="basic">Bas - Support under kontorstid</option>
+                            <option value="standard" selected>Standard - Utökad support + årlig service</option>
+                            <option value="premium">Premium - 24/7 support</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="special-terms">Särskilda villkor (fritext)</label>
+                        <textarea id="special-terms" rows="3" placeholder="Ange eventuella särskilda villkor eller överenskommelser..."></textarea>
                     </div>
                 </div>
 
@@ -731,15 +773,22 @@
 
         async function generatePDF(type) {
             try {
-                let customerName, customerCompany, customerEmail;
+                let customerName, customerCompany, customerEmail, customerPhone;
                 let items, agreementNumber, contractPeriod;
+                let paymentPlan, warrantyPeriod, serviceLevel, installationDate, specialTerms;
 
                 if (type === 'agreement') {
                     customerName = document.getElementById('agreement-customer-name').value;
                     customerCompany = document.getElementById('agreement-customer-company').value;
                     customerEmail = document.getElementById('agreement-customer-email').value;
+                    customerPhone = document.getElementById('agreement-customer-phone').value;
                     agreementNumber = document.getElementById('agreement-number').value || `AVT-${Date.now()}`;
                     contractPeriod = document.getElementById('contract-period').value;
+                    paymentPlan = document.getElementById('payment-plan').value;
+                    warrantyPeriod = document.getElementById('warranty-period').value;
+                    serviceLevel = document.getElementById('service-level').value;
+                    installationDate = document.getElementById('installation-date').value;
+                    specialTerms = document.getElementById('special-terms').value;
                     items = agreementCart;
                 } else {
                     customerName = document.getElementById('customer-name').value;
@@ -763,11 +812,17 @@
                     customer: {
                         name: customerName,
                         company: customerCompany,
-                        email: customerEmail
+                        email: customerEmail,
+                        phone: customerPhone
                     },
                     items: items,
                     agreement_number: agreementNumber,
-                    contract_period: contractPeriod
+                    contract_period: contractPeriod,
+                    payment_plan: paymentPlan,
+                    warranty_period: warrantyPeriod,
+                    service_level: serviceLevel,
+                    installation_date: installationDate,
+                    special_terms: specialTerms
                 };
 
                 const response = await fetch('/api/generate-pdf', {
